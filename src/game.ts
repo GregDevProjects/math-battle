@@ -1,47 +1,60 @@
-import 'phaser';
+import 'phaser'
+import Player from './player'
+import Asteroid from './asteriod'
+import inputController from './inputController'
+import { Position, PlayerTexture } from './enums'
 
-export default class Demo extends Phaser.Scene
-{
-    constructor ()
-    {
-        super('demo');
-    }
+export default class Demo extends Phaser.Scene {
+  player: Phaser.Physics.Arcade.Sprite
+  enemy: Phaser.Physics.Arcade.Sprite
+  cursors: Phaser.Types.Input.Keyboard.CursorKeys
+  asteroid
 
-    preload ()
-    {
-        this.load.image('logo', 'assets/phaser3-logo.png');
-        this.load.image('libs', 'assets/libs.png');
-        this.load.glsl('bundle', 'assets/plasma-bundle.glsl.js');
-        this.load.glsl('stars', 'assets/starfields.glsl.js');
-    }
+  constructor() {
+    super('demo')
+  }
 
-    create ()
-    {
-        this.add.shader('RGB Shift Field', 0, 0, 800, 600).setOrigin(0);
+  preload() {
+    this.load.image('shipYellow_manned', 'assets/shipYellow_manned.png')
+    this.load.image('shipGreen_manned', 'assets/shipGreen_manned.png')
+    this.load.image('spaceMeteors_001', 'assets/spaceMeteors_001.png')
+  }
 
-        this.add.shader('Plasma', 0, 412, 800, 172).setOrigin(0);
+  create() {
+    //this.add.shader('RGB Shift Field', 0, 0, 800, 600).setOrigin(0);
 
-        this.add.image(400, 300, 'libs');
+    this.player = new Player(this, Position.Top, PlayerTexture.Green)
+    this.enemy = new Player(this, Position.Bottom, PlayerTexture.Yellow)
 
-        const logo = this.add.image(400, 70, 'logo');
+    const horizontalOffset = 70
+    const y = this.cameras.main.centerY
+    const x = this.cameras.main.centerX
+    this.asteroid = [
+      new Asteroid(this, horizontalOffset, y),
+      new Asteroid(this, x, y),
+      new Asteroid(this, this.cameras.main.width - horizontalOffset, y)
+    ]
 
-        this.tweens.add({
-            targets: logo,
-            y: 350,
-            duration: 1500,
-            ease: 'Sine.inOut',
-            yoyo: true,
-            repeat: -1
-        })
-    }
+    this.cursors = this.input.keyboard.createCursorKeys()
+  }
+
+  update() {
+    inputController(this.player, this.cursors)
+  }
 }
 
 const config = {
-    type: Phaser.AUTO,
-    backgroundColor: '#125555',
-    width: 800,
-    height: 600,
-    scene: Demo
-};
+  type: Phaser.AUTO,
+  backgroundColor: '#125555',
+  width: 600,
+  height: 600,
+  scene: Demo,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: true
+    }
+  }
+}
 
-const game = new Phaser.Game(config);
+const game = new Phaser.Game(config)
